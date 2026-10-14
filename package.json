@@ -1,0 +1,18 @@
+{
+  "name": "ghoomyaar",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GhoomYaar - All India tourism discovery and trip planning",
+  "workspaces": ["apps/web", "apps/api", "packages/shared"],
+  "engines": { "node": ">=22.12.0" },
+  "scripts": {
+    "dev": "concurrently -n API,WEB -c cyan,green \"npm run dev -w @ghoomyaar/api\" \"npm run dev -w @ghoomyaar/web\"",
+    "dev:web": "npm run dev -w @ghoomyaar/web",
+    "dev:api": "npm run dev -w @ghoomyaar/api",
+    "build:shared": "npm run build -w @ghoomyaar/shared",
+    "build": "npm run build:shared && npm run build -w @ghoomyaar/api && npm run build -w @ghoomyaar/web",
+    "typecheck": "npm run build:shared && npm run typecheck -w @ghoomyaar/api && npm run typecheck -w @ghoomyaar/web",
+    "test": "npm run build:shared && npm test -w @ghoomyaar/api"
+  },
+  "devDependencies": { "concurrently": "^9.2.1", "typescript": "^5.9.3" }
+}

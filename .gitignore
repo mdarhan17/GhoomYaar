@@ -1,0 +1,13 @@
+﻿node_modules/
+dist/
+build/
+coverage/
+.env
+.env.*
+!.env.example
+.pnpm-store/
+.vite/
+.next/
+.DS_Store
+Thumbs.db
+*.log
