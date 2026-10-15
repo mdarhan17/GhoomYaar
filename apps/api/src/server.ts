@@ -1,22 +1,50 @@
-import { createServer } from 'node:http';
-import { createApp } from './app.js';
-import { connectDatabase, disconnectDatabase } from './config/database.js';
-import { env } from './config/env.js';
+import { app } from "./app.js";
+import { env } from "./config/env.js";
+import {
+  connectDatabase,
+  disconnectDatabase
+} from "./config/database.js";
 
-async function main() {
+async function bootstrap(): Promise<void> {
   await connectDatabase();
-  const server = createServer(createApp());
-  server.listen(env.PORT, () => console.info(`[api] running on http://localhost:${env.PORT}`));
+
+  const server = app.listen(env.PORT, () => {
+    console.log("-----------------------------------");
+    console.log("GhoomYaar API is running");
+    console.log(`Environment: ${env.NODE_ENV}`);
+    console.log(`Port: ${env.PORT}`);
+    console.log(
+      `Health: http://127.0.0.1:${env.PORT}/api/v1/health`
+    );
+    console.log("-----------------------------------");
+  });
+
   let shuttingDown = false;
+
   const shutdown = async () => {
     if (shuttingDown) return;
+
     shuttingDown = true;
-    console.info('[api] shutting down');
-    server.close(async error => {
-      try { await disconnectDatabase(); } finally { process.exit(error ? 1 : 0); }
+    console.log("[SERVER] Shutting down...");
+
+    server.close(async () => {
+      try {
+        await disconnectDatabase();
+        process.exitCode = 0;
+      } catch (error) {
+        console.error(error);
+        process.exitCode = 1;
+      }
     });
+
+    server.closeAllConnections();
   };
-  process.once('SIGINT', shutdown);
-  process.once('SIGTERM', shutdown);
+
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
 }
-main().catch(error => { console.error('[api] startup failed', error); process.exitCode = 1; });
+
+bootstrap().catch((error) => {
+  console.error("[STARTUP FAILED]", error);
+  process.exitCode = 1;
+});
